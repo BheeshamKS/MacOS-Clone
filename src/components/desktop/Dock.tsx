@@ -1,94 +1,111 @@
-import React, { useState } from 'react';
+import { useRef, memo } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { 
-  Smile, Calendar, Mail, Map, Settings, Trash2, FolderOpen,
-  MessageCircle, Video, Play, Phone, Compass, FileText, View,
-  Music, Tv 
-} from 'lucide-react';
+import { refractive } from "@hashintel/refractive";
+import { useWindows } from '../../contexts/WindowContext';
+
+import finderIcon from '../../assets/icons/finder.svg';
+import launchpadIcon from '../../assets/icons/launchpad.svg';
+import safariIcon from '../../assets/icons/safari.svg';
+import messagesIcon from '../../assets/icons/messages.svg';
+import mailIcon from '../../assets/icons/mail.svg';
+import mapsIcon from '../../assets/icons/maps.svg';
+import facetimeIcon from '../../assets/icons/facetime.svg';
+import calendarIcon from '../../assets/icons/calendar.svg';
+import calculatorIcon from '../../assets/icons/calculator.svg';
+import contactsIcon from '../../assets/icons/contacts.svg';
+import notesIcon from '../../assets/icons/notes.svg';
+import tvIcon from '../../assets/icons/tv.svg';
+import musicIcon from '../../assets/icons/music.svg';
+import appstoreIcon from '../../assets/icons/appstore.svg';
+import settingsIcon from '../../assets/icons/settings.svg';
+import trashIcon from '../../assets/icons/trash.svg';
 
 const apps = [
-  { name: 'Finder', fallback: FolderOpen, icon: '/icons/dock/finder.svg', active: true },
-  { name: 'Launchpad', fallback: View, icon: '/icons/dock/launchpad.svg', active: false },
-  { name: 'Safari', fallback: Compass, icon: '/icons/dock/safari.svg', active: true },
-  { name: 'Messages', fallback: MessageCircle, icon: '/icons/dock/messages.svg', active: false },
-  { name: 'Mail', fallback: Mail, icon: '/icons/dock/mail.svg', active: false },
-  { name: 'Maps', fallback: Map, icon: '/icons/dock/maps.svg', active: false },
-  { name: 'FaceTime', fallback: Video, icon: '/icons/dock/facetime.svg', active: false },
-  { name: 'Calendar', fallback: Calendar, icon: '/icons/dock/calendar.svg', active: true },
-  { name: 'Contacts', fallback: Smile, icon: '/icons/dock/contacts.svg', active: true },
-  { name: 'Notes', fallback: FileText, icon: '/icons/dock/notes.svg', active: false },
-  { name: 'TV', fallback: Tv, icon: '/icons/dock/tv.svg', active: false },
-  { name: 'Music', fallback: Music, icon: '/icons/dock/music.svg', active: false },
-  { name: 'App Store', fallback: Play, icon: '/icons/dock/appstore.svg', active: false },
-  { name: 'Settings', fallback: Settings, icon: '/icons/dock/settings.svg', active: false },
+  { name: 'Finder', icon: finderIcon },
+  { name: 'Launchpad', icon: launchpadIcon },
+  { name: 'Safari', icon: safariIcon },
+  { name: 'Messages', icon: messagesIcon },
+  { name: 'Mail', icon: mailIcon },
+  { name: 'Maps', icon: mapsIcon },
+  { name: 'FaceTime', icon: facetimeIcon },
+  { name: 'Calendar', icon: calendarIcon },
+  { name: 'Calculator', icon: calculatorIcon },
+  { name: 'Contacts', icon: contactsIcon },
+  { name: 'Notes', icon: notesIcon },
+  { name: 'TV', icon: tvIcon },
+  { name: 'Music', icon: musicIcon },
+  { name: 'App Store', icon: appstoreIcon },
+  { name: 'Settings', icon: settingsIcon },
   { divider: true },
-  { name: 'Trash', fallback: Trash2, icon: '/icons/dock/trash.svg', active: false },
+  { name: 'Trash', icon: trashIcon },
 ];
 
-export const Dock = () => {
+export const Dock = memo(() => {
   const mouseX = useMotionValue(Infinity);
+  const { windows, openApp } = useWindows();
 
   return (
     <div className="fixed bottom-3 left-0 right-0 flex justify-center z-50 pointer-events-none">
-      <div 
-        className="pointer-events-auto rounded-[32px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_40px_rgba(0,0,0,0.3)] border border-white/20 bg-white/10 dark:bg-black/10 backdrop-blur-[50px] saturate-[200%]"
-        onMouseMove={(e) => mouseX.set(e.pageX)}
+      <refractive.div 
+        refraction={{ radius: 24, blur: 20, bezelWidth: 2 }}
+        className="pointer-events-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_40px_rgba(0,0,0,0.3)] bg-white/10 dark:bg-black/10 saturate-[200%]"
+        onMouseMove={(e: any) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
       >
         <div className="flex items-end gap-[10px] px-3 pb-2 pt-2 h-[68px]">
-          {apps.map((app, i) => (
-            app.divider ? (
-               <div key={i} className="w-[1px] h-10 bg-black/10 mx-1 mb-2 self-end" />
-            ) : (
-               <DockIcon mouseX={mouseX} key={i} app={app} />
-            )
-          ))}
+          {apps.map((app, i) => {
+            if (app.divider) {
+               return <div key={i} className="w-[1px] h-10 bg-black/10 mx-1 mb-2 self-end" />;
+            }
+            
+            const appId = app.name?.toLowerCase() || '';
+            const isActive = windows.some(w => w.id === appId && w.isOpen);
+            
+            return (
+               <DockIcon 
+                  mouseX={mouseX} 
+                  key={i} 
+                  app={app} 
+                  isActive={isActive} 
+                  onAppClick={() => openApp(appId)} 
+               />
+            );
+          })}
         </div>
-      </div>
+      </refractive.div>
     </div>
   );
-};
+});
 
-function DockIcon({ mouseX, app }: { mouseX: any; app: any }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [imgError, setImgError] = useState(false);
+const DockIcon = memo(({ mouseX, app, isActive, onAppClick }: { mouseX: any; app: any; isActive: boolean; onAppClick: () => void }) => {
+  const ref = useRef<HTMLDivElement>(null);
 
   const distance = useTransform(mouseX, (val: number) => {
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
     return val - bounds.x - bounds.width / 2;
   });
 
-  // Base 48px size mapped over 150px proximity scale up to 85px max
   const widthSync = useTransform(distance, [-150, 0, 150], [48, 85, 48]);
-  // Use exact official macOS derived physics attributes
   const width = useSpring(widthSync, { mass: 0.1, stiffness: 170, damping: 12 });
-
-  const FallbackIcon = app.fallback;
 
   return (
     <motion.div
       ref={ref}
       style={{ width }}
       whileTap={{ scale: 0.8 }}
+      onClick={onAppClick}
       className="group relative flex flex-col items-center justify-end cursor-pointer h-full"
     >
-      <motion.div style={{ width, height: width }} className="relative flex items-center justify-center origin-bottom">
-        {!imgError && app.icon ? (
+      <motion.div style={{ width, height: width }} className="relative flex items-center justify-center origin-bottom drop-shadow-md">
            <img 
               src={app.icon} 
               alt={app.name} 
-              className="w-full h-full object-contain drop-shadow-md" 
-              onError={() => setImgError(true)}
+              className="w-full h-full object-contain" 
            />
-        ) : (
-           <div className={`relative flex items-center justify-center w-full h-full rounded-[22%] shadow-md bg-white/20 overflow-hidden border border-black/5`}>
-             {FallbackIcon && <FallbackIcon className="w-3/5 h-3/5 text-black drop-shadow-sm" />}
-           </div>
-        )}
       </motion.div>
       
-      {app.active && (
-        <div className="absolute -bottom-2 w-1 h-1 rounded-full bg-black/60 dark:bg-white/70" />
+      {isActive && (
+        <div className="absolute -bottom-2 w-1 h-1 rounded-full bg-black/60 dark:bg-white/70 shadow-sm" />
       )}
       
       <div className="absolute -top-[52px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
@@ -98,4 +115,4 @@ function DockIcon({ mouseX, app }: { mouseX: any; app: any }) {
       </div>
     </motion.div>
   );
-}
+});

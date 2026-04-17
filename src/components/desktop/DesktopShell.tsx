@@ -1,11 +1,10 @@
-import React, { ReactNode } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import type { FC, ReactNode } from 'react';
 
 interface DesktopShellProps {
   children: ReactNode;
 }
 
-export const DesktopShell: React.FC<DesktopShellProps> = ({ children }) => {
+export const DesktopShell: FC<DesktopShellProps> = ({ children }) => {
   return (
     <div 
       className="relative w-screen h-screen overflow-hidden bg-cover bg-center text-black font-sans"
