@@ -4,11 +4,31 @@ import {
   Download, Cloud, Folder
 } from 'lucide-react';
 
+const FolderIcon = ({ size = 32 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="folderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#7CD0FF" />
+        <stop offset="100%" stopColor="#30A8FF" />
+      </linearGradient>
+      <linearGradient id="folderBackGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#6BC2FF" />
+        <stop offset="100%" stopColor="#259CFF" />
+      </linearGradient>
+      <filter id="folderShadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.2" />
+      </filter>
+    </defs>
+    <path d="M4 14 C4 11 6 9 9 9 L24 9 C26 9 27 10 28 11.5 L31 16 L55 16 C58 16 60 18 60 21 L60 51 C60 54 58 56 55 56 L9 56 C6 56 4 54 4 51 Z" fill="url(#folderBackGradient)" />
+    <path d="M4 23 C4 21 6 19 9 19 L55 19 C58 19 60 21 60 24 L60 51 C60 54 58 56 55 56 L9 56 C6 56 4 54 4 51 Z" fill="url(#folderGradient)" filter="url(#folderShadow)" />
+  </svg>
+);
+
 export const FinderContent = memo(() => {
   return (
-    <div className="flex-1 flex mt-[56px] h-[calc(100%-56px)] bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80">
+    <div className="flex-1 flex h-full bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80">
       {/* Left Sidebar */}
-      <div className="w-[200px] border-r border-black/10 dark:border-white/10 flex flex-col pt-2 bg-white/40 dark:bg-black/30 backdrop-blur-md">
+      <div className="w-[200px] border-r border-black/10 dark:border-white/10 flex flex-col pt-[56px] bg-white/40 dark:bg-black/30 backdrop-blur-md">
         
         <div className="px-3 mb-4">
           <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 mb-1 px-2 uppercase">Favorites</h3>
@@ -58,7 +78,7 @@ export const FinderContent = memo(() => {
       </div>
 
       {/* Right Area Grid */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-6 pt-[56px] overflow-y-auto">
          <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-6">
             {[
               { name: 'Xcode' }, { name: 'Figma' }, { name: 'VS Code' },
@@ -68,8 +88,8 @@ export const FinderContent = memo(() => {
               { name: 'Calculator' }, { name: 'Chess' }, { name: 'Stickies' }
             ].map((app, i) => (
                <div key={i} className="flex flex-col items-center gap-2 group cursor-pointer">
-                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center border border-blue-200 dark:border-blue-800 shadow-sm group-hover:scale-105 transition-transform">
-                     <Folder size={32} className="text-blue-500 dark:text-blue-400" fill="currentColor" />
+                  <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/10 rounded-xl flex items-center justify-center border border-black/5 dark:border-white/5 shadow-sm group-hover:scale-105 transition-transform">
+                     <FolderIcon size={40} />
                   </div>
                   <span className="text-[12px] font-medium text-black dark:text-white/90 text-center truncate w-full">{app.name}</span>
                </div>

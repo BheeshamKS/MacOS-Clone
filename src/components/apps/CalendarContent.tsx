@@ -2,18 +2,30 @@ import { memo } from 'react';
 import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const CalendarContent = memo(() => {
+  const today = new Date();
+  const currentMonthName = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const currentDay = today.getDate();
+  
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+
+  const calendarDays = Array(firstDayOfMonth).fill(null).concat(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  );
+
   return (
-    <div className="flex-1 flex mt-[56px] h-[calc(100%-56px)] bg-white/20 dark:bg-black/20">
+    <div className="flex-1 flex h-full pt-[56px] bg-white/20 dark:bg-black/20">
       <div className="w-[250px] border-r border-black/10 dark:border-white/10 p-5 hidden md:block">
-        <h2 className="text-xl font-bold mb-6">April 2026</h2>
+        <h2 className="text-xl font-bold mb-6">{currentMonthName}</h2>
         <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 mb-2">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d}>{d}</div>)}
         </div>
         <div className="grid grid-cols-7 gap-1 text-center text-sm">
-          {/* Static stub representation */}
-          {Array.from({ length: 30 }).map((_, i) => (
-            <div key={i} className={`p-1 rounded-full ${i === 16 ? 'bg-red-500 text-white font-bold' : 'hover:bg-black/5'} cursor-pointer`}>
-              {i + 1}
+          {calendarDays.map((day, i) => (
+            <div key={i} className={`p-1 rounded-full ${day === currentDay ? 'bg-red-500 text-white font-bold' : day ? 'hover:bg-black/5 cursor-pointer' : ''}`}>
+              {day || ''}
             </div>
           ))}
         </div>

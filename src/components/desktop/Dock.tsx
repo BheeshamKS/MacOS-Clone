@@ -1,10 +1,9 @@
-import { useRef, memo } from 'react';
+import { useRef, memo, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { refractive } from "@hashintel/refractive";
 import { useWindows } from '../../contexts/WindowContext';
 
 import finderIcon from '../../assets/icons/finder.svg';
-import launchpadIcon from '../../assets/icons/launchpad.svg';
 import safariIcon from '../../assets/icons/safari.svg';
 import messagesIcon from '../../assets/icons/messages.svg';
 import mailIcon from '../../assets/icons/mail.svg';
@@ -14,38 +13,35 @@ import calendarIcon from '../../assets/icons/calendar.svg';
 import calculatorIcon from '../../assets/icons/calculator.svg';
 import contactsIcon from '../../assets/icons/contacts.svg';
 import notesIcon from '../../assets/icons/notes.svg';
-import tvIcon from '../../assets/icons/tv.svg';
 import musicIcon from '../../assets/icons/music.svg';
 import appstoreIcon from '../../assets/icons/appstore.svg';
 import settingsIcon from '../../assets/icons/settings.svg';
 import trashIcon from '../../assets/icons/trash.svg';
 
 const apps = [
-  { name: 'Finder', icon: finderIcon },
-  { name: 'Launchpad', icon: launchpadIcon },
-  { name: 'Safari', icon: safariIcon },
-  { name: 'Messages', icon: messagesIcon },
-  { name: 'Mail', icon: mailIcon },
-  { name: 'Maps', icon: mapsIcon },
-  { name: 'FaceTime', icon: facetimeIcon },
-  { name: 'Calendar', icon: calendarIcon },
-  { name: 'Calculator', icon: calculatorIcon },
-  { name: 'Contacts', icon: contactsIcon },
-  { name: 'Notes', icon: notesIcon },
-  { name: 'TV', icon: tvIcon },
-  { name: 'Music', icon: musicIcon },
-  { name: 'App Store', icon: appstoreIcon },
-  { name: 'Settings', icon: settingsIcon },
+  { name: 'Finder', icon: finderIcon, scale: 1 },
+  { name: 'Safari', icon: safariIcon, scale: 1 },
+  { name: 'Messages', icon: messagesIcon, scale: 0.875 },
+  { name: 'Mail', icon: mailIcon, scale: 1 },
+  { name: 'Maps', icon: mapsIcon, scale: 1 },
+  { name: 'FaceTime', icon: facetimeIcon, scale: 0.875 },
+  { name: 'Calendar', icon: calendarIcon, scale: 1 },
+  { name: 'Calculator', icon: calculatorIcon, scale: 0.875 },
+  { name: 'Contacts', icon: contactsIcon, scale: 0.875 },
+  { name: 'Notes', icon: notesIcon, scale: 1 },
+  { name: 'Music', icon: musicIcon, scale: 1 },
+  { name: 'App Store', icon: appstoreIcon, scale: 1 },
+  { name: 'Settings', icon: settingsIcon, scale: 1 },
   { divider: true },
-  { name: 'Trash', icon: trashIcon },
+  { name: 'Trash', icon: trashIcon, scale: 1 },
 ];
 
 export const Dock = memo(() => {
   const mouseX = useMotionValue(Infinity);
-  const { windows, openApp } = useWindows();
+  const { windows, openApp, updateDockBounds } = useWindows();
 
   return (
-    <div className="fixed bottom-3 left-0 right-0 flex justify-center z-50 pointer-events-none">
+    <div className="fixed bottom-3 left-0 right-0 flex justify-center z-[9999] pointer-events-none">
       <refractive.div 
         refraction={{ radius: 24, blur: 20, bezelWidth: 2 }}
         className="pointer-events-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_40px_rgba(0,0,0,0.3)] bg-white/10 dark:bg-black/10 saturate-[200%]"
@@ -68,6 +64,7 @@ export const Dock = memo(() => {
                   app={app} 
                   isActive={isActive} 
                   onAppClick={() => openApp(appId)} 
+                  updateDockBounds={updateDockBounds}
                />
             );
           })}
@@ -77,8 +74,20 @@ export const Dock = memo(() => {
   );
 });
 
-const DockIcon = memo(({ mouseX, app, isActive, onAppClick }: { mouseX: any; app: any; isActive: boolean; onAppClick: () => void }) => {
+const DockIcon = memo(({ mouseX, app, isActive, onAppClick, updateDockBounds }: { mouseX: any; app: any; isActive: boolean; onAppClick: () => void; updateDockBounds: any }) => {
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current || !app.name) return;
+    const updateBounds = () => {
+      if (ref.current) {
+        updateDockBounds(app.name.toLowerCase(), ref.current.getBoundingClientRect());
+      }
+    };
+    updateBounds();
+    window.addEventListener('resize', updateBounds);
+    return () => window.removeEventListener('resize', updateBounds);
+  }, [app.name, updateDockBounds]);
 
   const distance = useTransform(mouseX, (val: number) => {
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
@@ -100,7 +109,9 @@ const DockIcon = memo(({ mouseX, app, isActive, onAppClick }: { mouseX: any; app
            <img 
               src={app.icon} 
               alt={app.name} 
-              className="w-full h-full object-contain" 
+              style={{ transform: `scale(${app.scale || 1})` }}
+              className="w-full h-full aspect-square block object-contain select-none" 
+              draggable={false}
            />
       </motion.div>
       

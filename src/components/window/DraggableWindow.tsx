@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { motion, useDragControls } from 'framer-motion';
 import { refractive } from "@hashintel/refractive";
 import { X, Minus, Maximize2 } from 'lucide-react';
@@ -17,17 +17,35 @@ interface WindowProps {
 }
 
 const GenericContent = ({ name }: { name: string }) => (
-  <div className="flex-1 flex items-center justify-center mt-[56px] h-[calc(100%-56px)] bg-black/20 text-white/50 text-2xl font-light">
+  <div className="flex-1 flex items-center justify-center h-full pt-[56px] bg-black/20 text-white/50 text-2xl font-light">
     {name.charAt(0).toUpperCase() + name.slice(1)} App
   </div>
 );
 
 export const DraggableWindow = memo(({ windowState }: WindowProps) => {
   const dragControls = useDragControls();
-  const { closeApp, minimizeApp, maximizeApp, focusApp } = useWindows();
+  const { closeApp, minimizeApp, maximizeApp, focusApp, dockBounds } = useWindows();
 
-  // If minimized, we hide it from view (could optionally implement genie-dock effect here later)
-  if (windowState.isMinimized) return null;
+  const isCalc = windowState.id === 'calculator';
+  const defaultWidth = isCalc ? 280 : 850;
+  const defaultHeight = isCalc ? 580 : 580;
+  const defaultX = isCalc ? 450 : 280;
+  const defaultY = isCalc ? 200 : 150;
+
+  const [dragPos, setDragPos] = useState({ x: defaultX, y: defaultY });
+
+  const getMinimizedState = () => {
+    const target = dockBounds[windowState.id.toLowerCase()];
+    if (!target) {
+      return { scale: 0.2, x: defaultX, y: 800, opacity: 0 };
+    }
+    
+    const targetScale = target.width / defaultWidth;
+    const targetX = target.x + target.width / 2 - defaultWidth / 2;
+    const targetY = target.y + target.height / 2 - defaultHeight / 2;
+
+    return { scale: targetScale, x: targetX, y: targetY, opacity: 0 };
+  };
 
   const renderContent = () => {
     switch (windowState.id.toLowerCase()) {
@@ -40,22 +58,32 @@ export const DraggableWindow = memo(({ windowState }: WindowProps) => {
     }
   };
 
-  const dynamicStyle = windowState.isMaximized 
-    ? { width: '100vw', height: '100vh', top: 0, left: 0, x: 0, y: 0, zIndex: windowState.zIndex }
-    : { width: windowState.id === 'calculator' ? 320 : 850, height: windowState.id === 'calculator' ? 450 : 580, zIndex: windowState.zIndex };
+  const dynamicStyle = {
+    zIndex: windowState.zIndex, 
+    pointerEvents: windowState.isMinimized ? 'none' as const : 'auto' as const
+  };
 
   return (
     <RefractiveMotionDiv
       refraction={{ radius: 16, blur: 12, bezelWidth: 1 }}
-      drag={!windowState.isMaximized}
+      drag={!windowState.isMaximized && !windowState.isMinimized}
+      onDragEnd={(e, info) => {
+        setDragPos(prev => ({ x: prev.x + info.offset.x, y: prev.y + info.offset.y }));
+      }}
       dragControls={dragControls}
       dragListener={false}
       dragMomentum={false}
-      initial={{ x: windowState.id === 'calculator' ? 450 : 280, y: windowState.id === 'calculator' ? 200 : 150 }}
-      animate={windowState.isMaximized ? { x: 0, y: 0 } : undefined}
+      initial={{ ...getMinimizedState(), width: defaultWidth, height: defaultHeight }}
+      animate={
+        windowState.isMinimized
+          ? { ...getMinimizedState(), width: defaultWidth, height: defaultHeight, transition: { type: 'spring', damping: 25, stiffness: 200 } }
+          : windowState.isMaximized
+            ? { x: 0, y: 32, width: '100vw', height: 'calc(100vh - 32px)', scale: 1, opacity: 1, transition: { type: 'spring', damping: 25, stiffness: 200 } }
+            : { x: dragPos.x, y: dragPos.y, width: defaultWidth, height: defaultHeight, scale: 1, opacity: 1, transition: { type: 'spring', damping: 25, stiffness: 200 } }
+      }
       style={dynamicStyle}
       onPointerDown={() => focusApp(windowState.id)}
-      className="absolute flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.25)] bg-white/10 overflow-hidden text-black font-sans"
+      className="absolute top-0 left-0 flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.25)] bg-white/10 overflow-hidden text-black font-sans origin-center"
     >
       {/* Title Bar Layer */}
       <div 

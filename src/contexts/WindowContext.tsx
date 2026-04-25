@@ -10,22 +10,34 @@ export type WindowState = {
 
 interface WindowContextType {
   windows: WindowState[];
+  dockBounds: Record<string, DOMRect>;
   openApp: (id: string) => void;
   closeApp: (id: string) => void;
   minimizeApp: (id: string) => void;
   maximizeApp: (id: string) => void;
   focusApp: (id: string) => void;
+  updateDockBounds: (id: string, rect: DOMRect) => void;
 }
 
 const WindowContext = createContext<WindowContextType | undefined>(undefined);
 
-const DEFAULT_WINDOWS: WindowState[] = [
-  { id: 'finder', isOpen: true, isMinimized: false, isMaximized: false, zIndex: 10 },
-];
+const DEFAULT_WINDOWS: WindowState[] = [];
 
 export const WindowProvider = ({ children }: { children: ReactNode }) => {
   const [windows, setWindows] = useState<WindowState[]>(DEFAULT_WINDOWS);
+  const [dockBounds, setDockBounds] = useState<Record<string, DOMRect>>({});
   const [targetZ, setTargetZ] = useState(10);
+
+  const updateDockBounds = (id: string, rect: DOMRect) => {
+    setDockBounds(prev => {
+      // Avoid unnecessary re-renders if rect hasn't changed
+      const current = prev[id];
+      if (current && current.x === rect.x && current.y === rect.y && current.width === rect.width && current.height === rect.height) {
+        return prev;
+      }
+      return { ...prev, [id]: rect };
+    });
+  };
 
   const openApp = (id: string) => {
     setWindows(prev => {
@@ -62,7 +74,7 @@ export const WindowProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <WindowContext.Provider value={{ windows, openApp, closeApp, minimizeApp, maximizeApp, focusApp }}>
+    <WindowContext.Provider value={{ windows, dockBounds, openApp, closeApp, minimizeApp, maximizeApp, focusApp, updateDockBounds }}>
       {children}
     </WindowContext.Provider>
   );

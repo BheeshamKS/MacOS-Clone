@@ -19,9 +19,9 @@ const RECENTS = [
 
 export const ContactsContent = memo(() => {
   return (
-    <div className="flex-1 flex mt-[56px] h-[calc(100%-56px)]">
+    <div className="flex-1 flex h-full">
       {/* Left Sidebar */}
-      <div className="w-[280px] border-r border-black/10 flex flex-col pt-1 px-4 h-full bg-white/20">
+      <div className="w-[280px] border-r border-black/10 flex flex-col pt-[60px] px-4 h-full bg-white/20">
          {/* Top Actions */}
          <div className="flex items-center justify-between pl-14 mb-4">
             <div className="flex items-center space-x-2">
@@ -73,7 +73,7 @@ export const ContactsContent = memo(() => {
       </div>
 
       {/* Right Content Area */}
-      <div className="flex-1 p-[22px]">
+      <div className="flex-1 px-[22px] pb-[22px] pt-[78px]">
          <div className="w-full h-full bg-gradient-to-br from-[#f872b7] to-[#d641d9] rounded-[22px] p-6 flex flex-col shadow-[inset_0_0_20px_rgba(255,255,255,0.3)] relative overflow-hidden">
            
            {/* Abstract blur background effect */}
