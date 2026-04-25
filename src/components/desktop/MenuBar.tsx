@@ -1,4 +1,4 @@
-import { Apple, Wifi, Search, Battery, SlidersHorizontal } from 'lucide-react';
+import { Wifi, Search, Battery, SlidersHorizontal } from 'lucide-react';
 import { refractive } from "@hashintel/refractive";
 import { memo, useState, useEffect } from 'react';
 import { useWindows } from '../../contexts/WindowContext';

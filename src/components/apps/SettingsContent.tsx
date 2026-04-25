@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Wifi, Bluetooth, Battery, Monitor, Bell, Search, Moon, Sun } from 'lucide-react';
+import { Wifi, Bluetooth, Battery, Monitor, Bell, Search } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export const SettingsContent = memo(() => {

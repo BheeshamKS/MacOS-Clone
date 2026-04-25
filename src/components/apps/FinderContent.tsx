@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { 
   Clock, FileText, Monitor, HardDrive, 
-  Download, Cloud, Folder
+  Download, Cloud
 } from 'lucide-react';
 
 const FolderIcon = ({ size = 32 }: { size?: number }) => (

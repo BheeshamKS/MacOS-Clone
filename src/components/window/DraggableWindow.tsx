@@ -67,7 +67,7 @@ export const DraggableWindow = memo(({ windowState }: WindowProps) => {
     <RefractiveMotionDiv
       refraction={{ radius: 16, blur: 12, bezelWidth: 1 }}
       drag={!windowState.isMaximized && !windowState.isMinimized}
-      onDragEnd={(e, info) => {
+      onDragEnd={(_e, info) => {
         setDragPos(prev => ({ x: prev.x + info.offset.x, y: prev.y + info.offset.y }));
       }}
       dragControls={dragControls}
